@@ -1,36 +1,50 @@
 #pragma once
 #include <string>
-#include <cassert>
 #include "Serializer_Core.h"
-#include "IO/FileSystem.h"
+#pragma warning(push, 0)
+#include "yaml-cpp/yaml.h"
+#pragma warning(pop)
 
-namespace Serializer
+namespace Speculo
 {
-    enum class SerializerTextFormat
+    enum class OperationType
     {
-        YAML,
-        JSON,
-        Unspecified
+        Serialization,
+        Deserialization,
+        Unknown
     };
 
     class Serializer_Text : public Serializer_Core
     {
     public:
         Serializer_Text() = delete;
-        explicit Serializer_Text(SerializerTextFormat formatType, const std::string& filePath) noexcept : m_FormatType(formatType), m_FilePath(filePath)
-        {
-            /// Custom Engine Assert
-            assert(Speculo::FileSystem::ValidateFileDirectory(filePath));
-        }
+        explicit Serializer_Text(OperationType operationType, const std::string& filePath, const std::string& fileType) noexcept;
 
+        // Serialize
         template <typename T, typename = typename std::enable_if<!std::is_same<T, std::string>::value>::type>
         void SerializeProperty(const std::string& propertyName, T value)
         {
-            
+            m_ActiveEmitter << YAML::Key << propertyName << YAML::Value << value;
         }
 
+        // Deserialize
+        template <typename T, typename = typename std::enable_if<!std::is_same<T, std::string>::value>::type>
+        void DeserializeProperty(const std::string& propertyName, T* value)
+        {
+            *value = m_ActiveNode[propertyName].as<T>();
+        }
+
+        void EndSerialization() noexcept;
+
     private:
-        SerializerTextFormat m_FormatType = SerializerTextFormat::Unspecified;
+        bool ValidateFileType(const std::string& fileType);
+
+    private:
+        OperationType m_OperationType = OperationType::Unknown;
         const std::string m_FilePath = "";
+
+        // YAML
+        YAML::Emitter m_ActiveEmitter; // Serialization
+        YAML::Node m_ActiveNode;       // Deserialization
     };
 }

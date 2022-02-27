@@ -1,0 +1,7 @@
+Version_Major: 0
+Version_Minor: 1
+Version_Revision: 1
+Type: Test_Case_File
+---
+Player_Speed: 25
+Player_Health: 255
