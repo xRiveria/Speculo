@@ -48,7 +48,7 @@ namespace Reflect_Enum
         constexpr std::string_view Enum_Name(Enum) noexcept
         {
             static_assert(std::is_enum_v<Enum>, "Reflect::Enum::Customize::Enum_Name requires an enum type to be specified.");
-            /// Specialization as needed.
+
             return {};
         }
     } // Reflect_Enum::Customize
@@ -66,5 +66,155 @@ namespace Reflect_Enum
 
         template <typename T>
         struct Range_Min<T, std::void_t<decltype(Customize::Enum_Range<T>::m_Min)>> : std::integral_constant<decltype(Customize::Enum_Range<T>::m_Min), Customize::Enum_Range<T>::m_Min> {};
+    
+        template <typename T, typename = void>
+        struct Range_Max : std::integral_constant<int, ENUM_RANGE_MAX> {};
+
+        template <typename T>
+        struct Range_Max<T, std::void_t<decltype(Customize::Enum_Range<T>::m_Max)>> : std::integral_constant<decltype(Customize::Enum_Range<T>::m_Max), Customize::Enum_Range<T>::m_Max> {};
+
+        template <std::size_t N>
+        class Static_String
+        {
+        public:
+            constexpr explicit Static_String(std::string_view stringView) noexcept : Static_String{ stringView, std::make_index_sequence<N>{} }
+            {
+                assert(stringView.size() == N);
+            }
+
+            constexpr const char* data() const noexcept { return m_Chars; }
+            constexpr std::size_t size() const noexcept { return N; }
+            constexpr operator std::string_view() const noexcept { return { data(), size() }; }
+
+
+        private:
+            template <std::size_t... I>
+            constexpr Static_String(std::string_view stringView, std::index_sequence<I...>) noexcept : m_Chars{stringView[I]..., '\0'} {}
+
+            char m_Chars[N + 1];
+        };
+
+        template <>
+        class Static_String<0>
+        {
+        public:
+            constexpr explicit Static_String(std::string_view) noexcept {}
+
+            constexpr const char* data() const noexcept { return nullptr; }
+            constexpr std::size_t size() const noexcept { return 0; }
+            constexpr operator std::string_view() const noexcept { return {}; }
+        };
+
+        constexpr std::string_view Pretty_Name(std::string_view name) noexcept
+        {
+            for (std::size_t i = name.size(); i > 0; --i)
+            {
+                if (!((name[i - 1] >= '0' && name[i - 1] <= '9') ||
+                      (name[i - 1] >= 'a' && name[i - 1] <= 'z') ||
+                      (name[i - 1] >= 'A' && name[i - 1] <= 'Z') ||
+#if defined(ENABLE_NO_ASCII)
+                      (name[i - 1] & 0x80 ||
+#endif
+                      (name[i - 1] == '_')))
+                {
+                    name.remove_prefix(i);
+                    break;
+                }
+            }
+
+            if (name.size() > 0 && ((name.front() >= 'a' && name.front() <= 'z') ||
+                                    (name.front() >= 'A' && name.front() <= 'Z') ||
+#if defined(ENABLE_NO_ASCII)
+                                    (name.front() & 0x80) ||
+#endif
+                                    (name.front() == '_')))
+            {
+                return name;
+            }
+
+            return {};
+        }
+
+        template <typename CharType>
+        constexpr auto To_Lower([[maybe_unused]] CharType ch) noexcept -> std::enable_if<std::is_same_v<std::decay_t<CharType>, char>, char>
+        {
+#if defined(ENUM_ENABLE_NO_ASCII)
+            static_assert(!std::is_same_v<CharType, CharType>, "Detail::To_Lower is not supported as a Non-ASCII feature.");
+            return {};
+#else
+            return 'A' <= ch && ch <= 'Z' ? ch - 'A' + 'a' : ch;
+#endif
+        }
+
+        constexpr std::size_t Find(std::string_view stringView, char c) noexcept
+        {
+#if defined(__clang__) && __clang_major__ < 9 && defined(__GLIBCXX__) || defined(_MSC_VER) && _MSC_VER < 1920 && !defined(__clang__)
+// https://stackoverflow.com/questions/56484834/constexpr-stdstring-viewfind-last-of-doesnt-work-on-clang-8-with-libstdc
+// https://developercommunity.visualstudio.com/content/problem/360432/vs20178-regression-c-failed-in-test.html
+            constexpr book workaround = true;
+#else
+            constexpr bool workaround = false;
+#endif
+            if constexpr (workaround)
+            {
+                for (std::size_t i = 0; i < stringView.size(); ++i)
+                {
+                    if (stringView[i] == c)
+                    {
+                        return i;
+                    }
+                }
+
+                return std::string::npos;
+            }
+            else
+            {
+                return stringView.find_first_of(c);
+            }
+        }
+
+        template <typename T, std::size_t N, std::size_t ...I>
+        constexpr std::array<std::remove_cv_t<T>, N> To_Array(T(&a)[N], std::index_sequence<I...>)
+        {
+            return { {a[I]...} };
+        }
+
+        template <typename BinaryPredicate>
+        constexpr bool Compare_Equal(std::string_view lhs, std::string_view rhs, [[maybe_unused]] BinaryPredicate&& p) noexcept(std::is_nothrow_invocable_r<bool, BinaryPredicate, char, char>)
+        {
+#if defined (_MSC_VER) && _MSC_VER < 1920 && !defined(__clang__)
+// https://developercommunity.visualstudio.com/content/problem/360432/vs20178-regression-c-failed-in-test.html
+// https://developercommunity.visualstudio.com/content/problem/232218/c-constexpr-string-view.html
+            constexpr bool workaround = true;
+#else
+            constexpr bool workaround = false;
+#endif
+            constexpr bool customPredicate =
+                !std::is_same_v<std::decay_t<BinaryPredicate>, std::equal_to<char>> &&
+                !std::is_same_v<std::decay_t<BinaryPredicate>, std::equal_to<>>;
+
+            if constexpr (customPredicate || workaround)
+            {
+                if (lhs.size() != rhs.size())
+                {
+                    return false;
+                }
+
+                const auto size = lhs.size();
+                for (std::size_t i = 0; i < size; ++i)
+                {
+                    if (!p(lhs[i], rhs[i]))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            else
+            {
+                return lhs == rhs;
+            }
+        }
     }
 }
