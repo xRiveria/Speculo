@@ -25,4 +25,24 @@ namespace Speculo
         std::string fileDirectory = GetFileDirectory(filePath);
         return std::filesystem::exists(fileDirectory) && std::filesystem::is_directory(fileDirectory);
     }
+
+    std::string FileSystem::ValidateAndAppendFileExtension(const std::string& filePath, const std::string& fileExtension)
+    {
+        const size_t lastIndex = filePath.find_last_of('.');
+        if (lastIndex != std::string::npos)
+        {
+            if (filePath.substr(lastIndex) != fileExtension)
+            {
+                return filePath.substr(lastIndex - 1) + fileExtension;
+            }
+            else
+            {
+                return filePath;
+            }
+        }
+        else
+        {
+            return filePath + fileExtension;
+        }
+    }
 }

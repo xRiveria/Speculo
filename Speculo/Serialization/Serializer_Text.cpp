@@ -6,10 +6,9 @@
 namespace Speculo
 {
     Serializer_Text::Serializer_Text(OperationType operationType, const std::string& filePath, const std::string& fileType) noexcept 
-                                   : m_FilePath(filePath), m_OperationType(operationType)
+                                   : m_FilePath(Speculo::FileSystem::ValidateAndAppendFileExtension(filePath, ".yml")), m_OperationType(operationType)
     {
-        /// Custom Engine Assert
-        assert(Speculo::FileSystem::ValidateFileDirectory(filePath));
+        SPECULO_ASSERT(Speculo::FileSystem::ValidateFileDirectory(m_FilePath));
 
         if (operationType == OperationType::Serialization)
         {
@@ -25,7 +24,7 @@ namespace Speculo
         else if (operationType == OperationType::Deserialization)
         {
             m_ActiveNode = YAML::LoadFile(filePath);
-            assert(ValidateFileTypeAndVersion(fileType)); /// Engine Error Code.
+            SPECULO_ASSERT(ValidateFileTypeAndVersion(fileType));
         }
     }
 
@@ -67,7 +66,7 @@ namespace Speculo
             return true;
         }
 
-        SPECULO_THROW_WARNING(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_FAILURE, m_FilePath);
+        SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_FAILURE, m_FilePath);
         return false;
     }
 }

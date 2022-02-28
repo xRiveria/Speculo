@@ -9,6 +9,8 @@ namespace Speculo
 
 #define SPECULO_THROW_WARNING(warningCode, description)     std::cout << "WARNING: " << SpeculoResultToString(warningCode) << ": " << description << "\n";
 
+#define SPECULO_ASSERT(value)                               if (value == false) { abort(); }
+
     // Warnings -> Flag out and continue execution.
     // Error    -> Flag out and return. Execution denied.
     // Critical -> Engine breakdown.
