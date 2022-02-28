@@ -37,7 +37,7 @@ namespace Speculo
         void EndSerialization() noexcept;
 
     private:
-        bool ValidateFileType(const std::string& fileType);
+        virtual bool ValidateFileTypeAndVersion(const std::string& fileType) override;
 
     private:
         OperationType m_OperationType = OperationType::Unknown;

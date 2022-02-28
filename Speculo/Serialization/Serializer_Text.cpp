@@ -1,5 +1,5 @@
+#include "SpeculoPCH.h"
 #include "Serializer_Text.h"
-#include "IO/FileSystem.h"
 #include <cassert>
 #include <fstream>
 
@@ -15,19 +15,17 @@ namespace Speculo
         {
             m_ActiveEmitter << YAML::BeginMap;
 
+            m_ActiveEmitter << YAML::Key << "Type" << YAML::Value << fileType;
             m_ActiveEmitter << YAML::Key << "Version_Major" << YAML::Value << m_Version_Major;
             m_ActiveEmitter << YAML::Key << "Version_Minor" << YAML::Value << m_Version_Minor;
             m_ActiveEmitter << YAML::Key << "Version_Revision" << YAML::Value << m_Version_Revision;
-            m_ActiveEmitter << YAML::Key << "Type" << YAML::Value << fileType;
 
-            m_ActiveEmitter << YAML::EndMap;
-
-            m_ActiveEmitter << YAML::BeginMap;
+            m_ActiveEmitter << YAML::Newline << YAML::Newline;
         }
         else if (operationType == OperationType::Deserialization)
         {
             m_ActiveNode = YAML::LoadFile(filePath);
-            assert(ValidateFileType(fileType));
+            assert(ValidateFileTypeAndVersion(fileType)); /// Engine Error Code.
         }
     }
 
@@ -39,13 +37,37 @@ namespace Speculo
         outputFile << m_ActiveEmitter.c_str();
     }
 
-    bool Serializer_Text::ValidateFileType(const std::string& fileType)
+    bool Serializer_Text::ValidateFileTypeAndVersion(const std::string& fileType)
     {
-        if (m_ActiveNode["Type"].as<std::string>() != fileType)
+        if (!m_ActiveNode.IsNull())
         {
-            return false;
+            if (m_ActiveNode["Type"].as<std::string>() != fileType) 
+            {
+                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_TYPE_MISMATCH, m_FilePath);
+                return false;
+            }
+
+            if (m_ActiveNode["Version_Major"].as<int>() != m_Version_Major)
+            {   
+                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_VERSION_MAJOR_MISMATCH, m_FilePath);
+                return false;
+            }
+
+            if (m_ActiveNode["Version_Minor"].as<int>() != m_Version_Minor)
+            {
+                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_VERSION_MINOR_MISMATCH, m_FilePath);
+                return false;
+            }
+
+            if (m_ActiveNode["Version_Revision"].as<int>() != m_Version_Revision)
+            {
+                SPECULO_THROW_WARNING(SpeculoResult::SPECULO_WARNING_VERSION_REVISION_MISMATCH, m_FilePath);
+            }
+
+            return true;
         }
 
-        return true;
+        SPECULO_THROW_WARNING(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_FAILURE, m_FilePath);
+        return false;
     }
 }

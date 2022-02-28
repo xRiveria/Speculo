@@ -1,6 +1,6 @@
+#include "SpeculoPCH.h"
 #include "FileSystem.h"
 #include <filesystem>
-#include <iostream>
 
 namespace Speculo
 {
