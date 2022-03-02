@@ -1,5 +1,6 @@
 #include "SpeculoPCH.h"
 #include "../Serialization/Serializer_Text.h"
+#include "../Serialization/Serializer_Binary.h"
 #include "Material.h"
 #include "Math.h"
 
@@ -20,22 +21,47 @@ Material CreateDummyMaterial(const std::string& resourcePath)
     return dummyMaterial;
 }
 
-int main(int argc, int argv[])
+void TextSerializationTest()
 {
     Speculo::Serializer_Text testCase(Speculo::Serializer_Operation_Type::Serialization, "../UnitTests/Feature_Tests.yml", "Feature_Tests");
     testCase.SerializeProperty("Player_Speed", 15);
     testCase.SerializeProperty("Player_Health", 255);
     testCase.SerializeProperty("Player_Location", Speculo::Vector2(3, 5));
     testCase.EndSerialization();
+}
 
-    Speculo::Serializer_Text testCases(Speculo::Serializer_Operation_Type::Deserialization, "../UnitTests/Feature_Tests.yml", "Feature_Tests");
+void TextDeserializationTest()
+{
     int playerSpeed;
     Speculo::Vector2 locationVector;
+
+    Speculo::Serializer_Text testCases(Speculo::Serializer_Operation_Type::Deserialization, "../UnitTests/Feature_Tests.yml", "Feature_Tests");
     testCases.DeserializeProperty("Player_Speed", &playerSpeed);
     testCases.DeserializeProperty("Player_Location", &locationVector);
+    testCases.EndDeserialization();
 
     std::cout << playerSpeed << "\n" << locationVector.x << "\n" << locationVector.y;
+}
 
+void BinarySerializationTest()
+{
+    Speculo::Serializer_Binary binaryCaseWrite(Speculo::Serializer_Operation_Type::Serialization, "../UnitTests/BinaryTest", "Binary_Test");
+    binaryCaseWrite.SerializeProperty(6);
+    binaryCaseWrite.SerializeProperty(5.5f);
+    binaryCaseWrite.EndSerialization();
+}
+
+void BinaryDeserializationTest()
+{
+    Speculo::Serializer_Binary binaryCaseRead(Speculo::Serializer_Operation_Type::Deserialization, "../UnitTests/BinaryTest", "Binary_Test");
+    int value;
+    binaryCaseRead.DeserializeProperty(&value);
+    std::cout << value << "\n" << binaryCaseRead.DeserializePropertyAs<float>() << "\n";
+    binaryCaseRead.EndDeserialization();
+}
+
+void MaterialSerializationTest()
+{
     // ===========================================================
     Material dummyMaterial = CreateDummyMaterial("../UnitTests/Material"); /// Automatically populate extension.
 
@@ -51,5 +77,14 @@ int main(int argc, int argv[])
     materialSerialization.SerializeProperty("Material_Roughness_Path", dummyMaterial.GetTexturePath(Material_Property::Material_Roughness));
     materialSerialization.SerializeProperty("Material_Roughness_Multiplier", dummyMaterial.GetTextureProperty(Material_Property::Material_Roughness));
 
-    materialSerialization.EndSerialization();
+    // materialSerialization.EndSerialization();
+}
+
+int main(int argc, int argv[])
+{
+    BinarySerializationTest();
+    BinaryDeserializationTest();
+
+    TextSerializationTest();
+    TextDeserializationTest();
 }

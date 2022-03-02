@@ -2,50 +2,67 @@
 #include <string>
 #include "Serializer_Core.h"
 #include "Serializer_Text_Utilities.h"
-#pragma warning(push, 0)
-#include "yaml-cpp/yaml.h"
-#pragma warning(pop)
 
 namespace Speculo
 {
+    // This is a data container for serialization/deserialization purposes. It can only be used for either one at any point in time, and not both together at the same time.
     class Serializer_Text : public Serializer_Core
     {
     public:
         Serializer_Text() = delete;
+        ~Serializer_Text();
         explicit Serializer_Text(Serializer_Operation_Type operationType, const std::string& filePath, const std::string& fileType) noexcept;
 
         // Serialize
         template <typename T>
         void SerializeProperty(const std::string& propertyName, T value)
         {
-            m_ActiveEmitter << YAML::Key << propertyName << YAML::Value << value;
+            if (m_IsStreamOpen)
+            {
+                m_ActiveEmitter << YAML::Key << propertyName << YAML::Value << value;
+            }
+            else
+            {
+                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_FILESTREAM_UNOPEN, m_FilePath);
+                return;
+            }
         }
 
         // Deserialize
         template <typename T>
         void DeserializeProperty(const std::string& propertyName, T* value)
         {
-            try
+            if (m_IsStreamOpen)
             {
-                *value = m_ActiveNode[propertyName].as<T>();
+                try
+                {
+                    *value = m_ActiveNode[propertyName].as<T>();
+                }
+                catch (std::exception& thrownError)
+                {
+                    SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_FAILURE, thrownError.what() + std::string(": ") + m_FilePath);
+                }
             }
-            catch (std::exception& thrownError)
+            else
             {
-                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_DESERIALIZATION_FAILURE, thrownError.what() + std::string(": ") + m_FilePath);
+                SPECULO_THROW_ERROR(SpeculoResult::SPECULO_ERROR_FILESTREAM_UNOPEN, m_FilePath);
+                return;
             }
         }
 
-        void EndSerialization() noexcept;
+        virtual void EndSerialization() override;
+        virtual void EndDeserialization() override;
 
     private:
-        virtual bool ValidateMetadata(const std::string& fileType) override;
+        virtual void BeginSerialization() override;
+        virtual void BeginDeserialization() override;
+        virtual bool ValidateMetadata() override;
 
     private:
-        Serializer_Operation_Type m_OperationType = Serializer_Operation_Type::Unknown;
-        const std::string m_FilePath = "";
-
         // YAML
         YAML::Emitter m_ActiveEmitter; // Serialization
         YAML::Node m_ActiveNode;       // Deserialization
+
+        bool m_IsStreamOpen = false;
     };
 }
