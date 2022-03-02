@@ -50,6 +50,14 @@ namespace Speculo
             }
         }
 
+        template <typename T>
+        T DeserializePropertyAs(const std::string& propertyName)
+        {
+            T value;
+            DeserializeProperty(propertyName, &value);
+            return value;
+        }
+
         virtual void EndSerialization() override;
         virtual void EndDeserialization() override;
 

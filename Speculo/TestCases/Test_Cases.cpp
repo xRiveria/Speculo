@@ -6,7 +6,7 @@
 
 Material CreateDummyMaterial(const std::string& resourcePath)
 {
-    Material dummyMaterial("../UnitTests/Material_Test");
+    Material dummyMaterial(resourcePath);
 
     dummyMaterial.SetTexturePath(Material_Property::Material_Color, "RandomColorPath.jpg");
     dummyMaterial.SetTexturePath(Material_Property::Material_Metallic, "RandomMetallicPath.jpg");
@@ -40,7 +40,7 @@ void TextDeserializationTest()
     testCases.DeserializeProperty("Player_Location", &locationVector);
     testCases.EndDeserialization();
 
-    std::cout << playerSpeed << "\n" << locationVector.x << "\n" << locationVector.y;
+    std::cout << playerSpeed << "\n" << locationVector.x << "\n" << locationVector.y << "\n";
 }
 
 void BinarySerializationTest()
@@ -63,7 +63,7 @@ void BinaryDeserializationTest()
 void MaterialSerializationTest()
 {
     // ===========================================================
-    Material dummyMaterial = CreateDummyMaterial("../UnitTests/Material"); /// Automatically populate extension.
+    Material dummyMaterial = CreateDummyMaterial("../UnitTests/Material_Test"); /// Automatically populate extension.
 
     // We can simply nest this inside the material class as well.
     Speculo::Serializer_Text materialSerialization(Speculo::Serializer_Operation_Type::Serialization, dummyMaterial.GetResourcePath(), "Material");
@@ -77,7 +77,14 @@ void MaterialSerializationTest()
     materialSerialization.SerializeProperty("Material_Roughness_Path", dummyMaterial.GetTexturePath(Material_Property::Material_Roughness));
     materialSerialization.SerializeProperty("Material_Roughness_Multiplier", dummyMaterial.GetTextureProperty(Material_Property::Material_Roughness));
 
-    // materialSerialization.EndSerialization();
+    materialSerialization.EndSerialization();
+}
+
+void MaterialDeserializationTest()
+{
+    Speculo::Serializer_Text materialDeserialization(Speculo::Serializer_Operation_Type::Deserialization, "../UnitTests/Material_Test", "Material");
+    std::cout << materialDeserialization.DeserializePropertyAs<std::string>("Material_Color_Path") << "\n";
+    materialDeserialization.EndDeserialization();
 }
 
 int main(int argc, int argv[])
@@ -87,4 +94,7 @@ int main(int argc, int argv[])
 
     TextSerializationTest();
     TextDeserializationTest();
+
+    MaterialSerializationTest();
+    MaterialDeserializationTest();
 }
