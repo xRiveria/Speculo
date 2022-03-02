@@ -1,0 +1,27 @@
+name: Speculo_Windows
+
+on: [push, pull_request]
+
+jobs:
+  Build_Image:
+    runs-on: [windows-2022]
+    env:
+      MSBUILD_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\MSBuild\Current\Bin\
+
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Generate Project Files
+        shell: cmd
+        run: 'GenerateProject'
+
+      - name: Build
+        shell: cmd
+        run: '"%MSBUILD_PATH%\MSBuild.exe" /p:Configuration=Debug /m Speculo.sln'
+
+      - uses: actions/upload-artifact@master  
+        with:
+          name: Speculo_Windows
+          path: Binaries
