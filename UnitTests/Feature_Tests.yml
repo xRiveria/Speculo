@@ -1,7 +1,10 @@
-Type: Feature_Tests
-Version_Major: 0
-Version_Minor: 2
-Version_Revision: 1
+Metadata:
+  Type: Feature_Tests
+  Version_Major: 0
+  Version_Minor: 2
+  Version_Revision: 1
 
-Player_Speed: 15
-Player_Health: 255
+Data:
+  Player_Speed: 15
+  Player_Health: 255
+  Player_Location: [3, 5]

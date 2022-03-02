@@ -10,6 +10,7 @@ namespace Speculo
         static std::string GetFileDirectory(const std::string& filePath);
 
         static bool ValidateFileDirectory(const std::string& filePath);
+        static bool ValidateFileExistence(const std::string& filePath);
         static std::string ValidateAndAppendFileExtension(const std::string& filePath, const std::string& fileExtension);
     };
 }
