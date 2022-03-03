@@ -3,18 +3,17 @@
 
 namespace Speculo
 {
-    template <typename T, std::enable_if<std::is_integral<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
     T ReturnItem(T value)
     {
-        T thing;
-        return T;
+        T thing = 5;
+        return thing;
     }
 
     void Derp()
     {
         ReturnItem(5);
     }
-
 
     struct TypeDescriptor_Int : TypeDescriptor
     {
