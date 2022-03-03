@@ -36,18 +36,28 @@ project "Speculo"
         "%{wks.location}/Dependencies/"
     }
 
-    libdirs
-    {
-        "%{wks.location}/Dependencies/Libraries/"
-    }
-
-    links
-    {
-        "yaml-cppd.lib"
-    }
-
     filter "configurations:Debug"
         symbols "On"
 
+        libdirs
+        {
+            "%{wks.location}/Dependencies/Libraries/Debug/"
+        }
+
+        links
+        {
+            "yaml-cppd.lib"
+        }
+
     filter "configurations:Release"
-        symbols "On"
+        optimize "On"
+
+        libdirs
+        {
+            "%{wks.location}/Dependencies/Libraries/Release/"
+        }
+
+        links
+        {
+            "yaml-cpp.lib"
+        }
