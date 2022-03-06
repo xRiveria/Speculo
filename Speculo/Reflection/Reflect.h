@@ -18,7 +18,7 @@ namespace Speculo
         size_t m_Size;
     };
 
-    // Finding type descriptors.
+    // Primary template for finding primitive.
     template <typename T>
     TypeDescriptor* GetPrimitiveDescriptor(); // For primitive types.
 

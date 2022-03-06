@@ -3,8 +3,6 @@
 #include "../Serialization/Serializer_Binary.h"
 #include "Material.h"
 #include "Math.h"
-#include "Reflection/Reflect.h"
-#include "Reflection/Primitives.h"
 
 Material CreateDummyMaterial(const std::string& resourcePath)
 {
@@ -101,9 +99,16 @@ int main(int argc, int argv[])
     MaterialDeserializationTest();
 
     // Reflection
-    int derp = 5;
+    //int derp = 5;
+    //double derp2 = 10;
+
     // Find Node's Type Descriptor.
-    Speculo::TypeDescriptor* typeDescriptor = Speculo::TypeResolver<int>::Get();
+    //Speculo::TypeDescriptor* typeDescriptor = Speculo::TypeResolver<int>::Get();
+    //Speculo::TypeDescriptor* typeDescriptorDouble = Speculo::TypeResolver<double>::Get();
     // Dump a description of the node object to the console.
-    typeDescriptor->Dump(&derp);
+    //typeDescriptorDouble->Dump(&derp2);
+    //typeDescriptor->Dump(&derp);
+
+    //std::vector<std::string> vec1({ "ant", "bat", "cat" });
+    //std::vector<std::string> vec2{ vec1[2], vec1[0], vec1[1] };
 }

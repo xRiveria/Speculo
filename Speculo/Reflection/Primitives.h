@@ -3,17 +3,19 @@
 
 namespace Speculo
 {
-    template <typename T, typename std::enable_if<std::is_integral<T>::value, int>::type = 0>
-    T ReturnItem(T value)
-    {
-        T thing = 5;
-        return thing;
-    }
+    /*
+        The type descriptor of every primitive "built-in" type, whether its an int, double, std::string or something else, is found using the 
+        GetPrimitiveDescriptor<T>() function template.
+    */
 
-    void Derp()
+    struct TypeDescriptor_Double : TypeDescriptor
     {
-        ReturnItem(5);
-    }
+        TypeDescriptor_Double() : TypeDescriptor("double", sizeof(double)) { }
+        virtual void Dump(const void* typeObject, int /* Unused */) const override
+        {
+            std::cout << "double{" << *(const double*)typeObject << "}";
+        }
+    };
 
     struct TypeDescriptor_Int : TypeDescriptor
     {
@@ -24,13 +26,6 @@ namespace Speculo
         }
     };
 
-    template <>
-    TypeDescriptor* GetPrimitiveDescriptor<int>()
-    {
-        static TypeDescriptor_Int m_TypeDescriptor;
-        return &m_TypeDescriptor;
-    }
-
     struct TypeDescriptor_StdString : TypeDescriptor
     {
         TypeDescriptor_StdString() : TypeDescriptor("std::string", sizeof(std::string)) { }
@@ -40,10 +35,25 @@ namespace Speculo
         }
     };
 
+    template<>
+    TypeDescriptor* GetPrimitiveDescriptor<double>()
+    {
+        static TypeDescriptor_Double m_TypeDescriptor;
+        return &m_TypeDescriptor;
+    }
+
+    template <>
+    TypeDescriptor* GetPrimitiveDescriptor<int>()
+    {
+        static TypeDescriptor_Int m_TypeDescriptor;
+        return &m_TypeDescriptor;
+    }
+
     template <>
     TypeDescriptor* GetPrimitiveDescriptor<std::string>()
     {
         static TypeDescriptor_StdString m_TypeDescriptor;
         return &m_TypeDescriptor;
     }
+
 }
