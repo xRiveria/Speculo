@@ -1,10 +1,13 @@
 #pragma once
+#ifndef TYPE_DESCRIPTOR_H
+#define TYPE_DESCRIPTOR_H
+
 #include <string>
 #include <vector>
 #include <map>
 #include <type_traits>
 
-namespace Reflect
+namespace Speculo
 {
     // Forward Declarations (Type Information)
     class DataMember;           // Variables
@@ -196,3 +199,7 @@ namespace Reflect
         }
     }
 }
+
+#include "TypeDescriptor.inl"
+
+#endif // TYPE_DESCRIPTOR_H
