@@ -200,6 +200,8 @@ namespace Speculo
     }
 }
 
+#include "Base.hpp"
+#include "Conversion.hpp"
 #include "TypeDescriptor.inl"
 
 #endif // TYPE_DESCRIPTOR_H
