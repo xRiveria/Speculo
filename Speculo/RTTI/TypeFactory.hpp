@@ -1,4 +1,3 @@
-#pragma once
 #ifndef TYPE_FACTORY_H
 #define TYPE_FACTORY_H
 
@@ -57,7 +56,7 @@ namespace Speculo
         template <typename T, typename U = Type> // Default template type parameter to allow for non-class types.
         TypeFactory& AddDataMember(T U::*dataMemberPointer, const std::string& name)
         {
-            Details::Resolve<Type>()->template AddDataMember(dataMemberPointer, name);
+            Details::Resolve<Type>()->AddDataMember(dataMemberPointer, name);
 
             return *this;
         }
@@ -73,7 +72,7 @@ namespace Speculo
         template <typename Return, typename ...Args>
         TypeFactory& AddMemberFunction(Return(*freeFunction)(Args...), const std::string name)
         {
-            Details::Resolve<Type>()->template AddMemberFunction(freeFunction, name);
+            Details::Resolve<Type>()->AddMemberFunction(freeFunction, name);
 
             return *this;
         }
@@ -81,7 +80,7 @@ namespace Speculo
         template <typename Return, typename ...Args, typename U = Type>
         TypeFactory& AddMemberFunction(Return(*U::*memberFunction)(Args...), const std::string& name)
         {
-            Details::Resolve<Type>()->template AddMemberFunction(memberFunction, name);
+            Details::Resolve<Type>()->AddMemberFunction(memberFunction, name);
 
             return *this;
         }
@@ -89,7 +88,7 @@ namespace Speculo
         template <typename Return, typename ...Args, typename U = Type>
         TypeFactory& AddMemberFunction(Return(U::*constMemberFunction)(Args...) const, const std::string& name)
         {
-            Details::Resolve<Type>()->template AddMemberFunction(constMemberFunction, name);
+            Details::Resolve<Type>()->AddMemberFunction(constMemberFunction, name);
 
             return *this;
         }

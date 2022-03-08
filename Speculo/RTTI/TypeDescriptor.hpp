@@ -1,4 +1,3 @@
-#pragma once
 #ifndef TYPE_DESCRIPTOR_H
 #define TYPE_DESCRIPTOR_H
 
@@ -42,7 +41,7 @@ namespace Speculo
         void AddConstructor();
 
         template <typename Type, typename ...Args>
-        void AddConstructor(Type(*)(Args...));
+        void AddConstructor(Type(*constructorFunction)(Args...));
 
         template <typename B, typename T>
         void AddBase();
@@ -200,8 +199,12 @@ namespace Speculo
     }
 }
 
+#include "DataMember.hpp"
+#include "Function.hpp"
+#include "Constructor.hpp"
 #include "Base.hpp"
 #include "Conversion.hpp"
+
 #include "TypeDescriptor.inl"
 
 #endif // TYPE_DESCRIPTOR_H

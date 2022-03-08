@@ -3,6 +3,13 @@
 #include "../Serialization/Serializer_Binary.h"
 #include "Material.h"
 #include "Math.h"
+#include "RTTI/Reflect.hpp"
+
+template <typename T>
+void Print(const T& t)
+{
+    std::cout << Speculo::Resolve<T>()->GetName() << ": " << t << std::endl;
+}
 
 Material CreateDummyMaterial(const std::string& resourcePath)
 {
@@ -89,6 +96,10 @@ void MaterialDeserializationTest()
 
 int main(int argc, int argv[])
 {
+    Speculo::Reflect<int>("int").AddMemberFunction(&Print<int>, "Print");
+    auto a = Speculo::Resolve("int");
+    Speculo::Resolve("int")->GetMemberFunction("Print")->Invoke(a, 5);
+
     BinarySerializationTest();
     BinaryDeserializationTest();
 
@@ -112,3 +123,5 @@ int main(int argc, int argv[])
     //std::vector<std::string> vec1({ "ant", "bat", "cat" });
     //std::vector<std::string> vec2{ vec1[2], vec1[0], vec1[1] };
 }
+
+

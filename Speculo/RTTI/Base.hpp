@@ -1,4 +1,3 @@
-#pragma once
 #ifndef BASE_H
 #define BASE_H
 
@@ -16,19 +15,19 @@ namespace Speculo
         Base(const TypeDescriptor* type, const TypeDescriptor* parent) : m_Type(type), m_Parent(parent) {}
 
     private:
-        const TypeDescriptor* m_Parent; // Derived
         const TypeDescriptor* m_Type;   // Base 
+        const TypeDescriptor* m_Parent; // Derived
     };
 
-    template <typename B, typename D>
+    template <typename Base, typename Derived>
     class BaseImplementation : public Base
     {
     public:
-        BaseImplementation() : Base(Details::Resolve<B>(), Details::Resolve<D>()) {}
+        BaseImplementation() : Base(Details::Resolve<Base>(), Details::Resolve<Derived>()) {}
 
         void* Cast(void* object) override
         {
-            return static_cast<B*>(object);
+            return static_cast<Base*>(object);
         }
     };
 }

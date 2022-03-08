@@ -1,4 +1,3 @@
-#pragma once
 #ifndef META_ANY_H
 #define META_ANY_H
 
@@ -71,7 +70,7 @@ namespace Speculo
     template <std::size_t Size>
     void swap(BasicAny<Size>& any1, BasicAny<Size>& any2)
     {
-        any1.swap(any2);
+        any1.Swap(any2);
     }
 
     // Any acts as a container of an object of any kind. It either allocates the object dynamically on the heap or uses an SBO optimization for objects whose size is less than Size.
@@ -283,7 +282,7 @@ namespace Speculo
         {
             Details::AlignedStorageT<Size> temporaryStorage;
             void* temporaryInstance = m_Move(&temporaryStorage, m_Instance);
-            m_Instance = other.m_Move(m_Storage, other.m_Instance);
+            m_Instance = other.m_Move(&m_Storage, other.m_Instance);
             other.m_Instance = m_Move(&other.m_Storage, temporaryInstance);
         }
         else if (m_Move)
@@ -388,7 +387,6 @@ namespace Speculo
 
         return converted;
     }
-
 }
 
 #endif 
