@@ -4,6 +4,9 @@
 #include "Material.h"
 #include "Math.h"
 #include "RTTI/Reflect.hpp"
+#include "Delegates/Signal.hpp"
+
+using namespace Speculo;
 
 template <typename T>
 void Print(const T& t)
@@ -94,8 +97,42 @@ void MaterialDeserializationTest()
     materialDeserialization.EndDeserialization();
 }
 
+class MyClass
+{
+public:
+    MyClass(int i) : i(i) {}
+    int MemberFunction(double d) { std::cout << "in member function" << std::endl; return int(++i * d); }
+    int ConstMemberFunction(double d) const { std::cout << "in const member function" << std::endl; return int(i * d); }
+    int operator()(double d) { std::cout << "in overloaded function call operator" << std::endl; return (int)(++i + d); }
+    int operator()(double d) const { std::cout << "in const overloaded function call operator" << std::endl; return (int)(i + d); }
+    static int StaticMemberFunction(double d) { std::cout << "in static member function" << std::endl; return int(10 + d); }
+private:
+    int i;
+};
+
+SIGNAL_RETURN_ONE_PARAM(MultiDelegate, int, double);
+MultiDelegate multiDelegate;
+
 int main(int argc, int argv[])
 {
+    MyClass mc(10);
+    const MyClass cmc(8);
+    int i = 10;
+    auto lambda = [&i](double d) { std::cout << "in  lvalue lambda" << std::endl; return i * d; };
+
+    multiDelegate.Bind<MyClass, &MyClass::MemberFunction>(mc);
+    multiDelegate.Bind<MyClass, &MyClass::ConstMemberFunction>(mc);
+    multiDelegate.Bind<const MyClass, &MyClass::ConstMemberFunction>(cmc);
+    multiDelegate.Bind<&MyClass::StaticMemberFunction>();
+    multiDelegate.Bind(mc);
+    multiDelegate.Bind(cmc);
+    multiDelegate.Bind(lambda);
+    // multiDelegate.Bind([&i](double d) { std::cout << " in rvalue lambda" << std::endl; return i * d; });
+
+    multiDelegate.Invoke(1.20);
+
+    // ===========================================================================
+
     Speculo::Reflect<int>("int").AddMemberFunction(&Print<int>, "Print");
     auto a = Speculo::Resolve("int");
     Speculo::Resolve("int")->GetMemberFunction("Print")->Invoke(a, 5);
@@ -122,6 +159,12 @@ int main(int argc, int argv[])
 
     //std::vector<std::string> vec1({ "ant", "bat", "cat" });
     //std::vector<std::string> vec2{ vec1[2], vec1[0], vec1[1] };
+
 }
+
+
+
+
+
 
 
