@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "Math.h"
 #include "RTTI/Reflect.hpp"
-#include "Delegates/Signal.hpp"
+// #include "Delegates/Signal.hpp"
 
 using namespace Speculo;
 
@@ -110,11 +110,12 @@ private:
     int i;
 };
 
-SIGNAL_RETURN_ONE_PARAM(MultiDelegate, int, double);
-MultiDelegate multiDelegate;
+// SIGNAL_RETURN_ONE_PARAM(MultiDelegate, int, double);
+// MultiDelegate multiDelegate;
 
 int main(int argc, int argv[])
 {
+/*
     MyClass mc(10);
     const MyClass cmc(8);
     int i = 10;
@@ -122,7 +123,7 @@ int main(int argc, int argv[])
 
     multiDelegate.Bind<MyClass, &MyClass::MemberFunction>(mc);
     multiDelegate.Bind<MyClass, &MyClass::ConstMemberFunction>(mc);
-    multiDelegate.Bind<const MyClass, &MyClass::ConstMemberFunction>(cmc);
+    // multiDelegate.Bind<const MyClass, &MyClass::ConstMemberFunction>(cmc);
     multiDelegate.Bind<&MyClass::StaticMemberFunction>();
     multiDelegate.Bind(mc);
     multiDelegate.Bind(cmc);
@@ -130,7 +131,7 @@ int main(int argc, int argv[])
     // multiDelegate.Bind([&i](double d) { std::cout << " in rvalue lambda" << std::endl; return i * d; });
 
     multiDelegate.Invoke(1.20);
-
+ */
     // ===========================================================================
 
     Speculo::Reflect<int>("int").AddMemberFunction(&Print<int>, "Print");
@@ -145,21 +146,6 @@ int main(int argc, int argv[])
 
     MaterialSerializationTest();
     MaterialDeserializationTest();
-
-    // Reflection
-    //int derp = 5;
-    //double derp2 = 10;
-
-    // Find Node's Type Descriptor.
-    //Speculo::TypeDescriptor* typeDescriptor = Speculo::TypeResolver<int>::Get();
-    //Speculo::TypeDescriptor* typeDescriptorDouble = Speculo::TypeResolver<double>::Get();
-    // Dump a description of the node object to the console.
-    //typeDescriptorDouble->Dump(&derp2);
-    //typeDescriptor->Dump(&derp);
-
-    //std::vector<std::string> vec1({ "ant", "bat", "cat" });
-    //std::vector<std::string> vec2{ vec1[2], vec1[0], vec1[1] };
-
 }
 
 

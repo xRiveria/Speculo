@@ -3,12 +3,75 @@
 
 #include <type_traits>
 #include <utility>
-#include <new>
-#include <cstddef>
+#include <exception>
+#include "Callable.hpp"
+#include "Connection.hpp"
 
 namespace Speculo
 {
-    // Primary Delegate Class Template
+    // Delegate Exceptions
+    class DelegateNotBoundExceptiopn : public std::exception
+    {
+    public:
+        const char* what() const noexcept override
+        {
+            return "Delegate not bound.";
+        }
+    };
+
+    class DelegateAlreadyBoundException : public std::exception
+    {
+    public:
+        const char* what() const noexcept override
+        {
+            return "Delegate already bound.";
+        }
+    };
+
+    class WrongCallableException : public std::exception
+    {
+    public:
+        const char* what() const noexcept override
+        {
+            return "Trying to disconnect wrong callable.";
+        }
+    };
+
+    // Forward declaration (for friend declaration inside Delegate).
+    template <typename Signature>
+    class Signal;
+
+    // Delegate primary class template (not defined).
+    template <typename Signature>
+    class Delegate;
+
+    // Namespace scope swap.
+    template <typename Return, typename ...Args>
+    void Swap(Delegate<Return(Args...)>& delegate1, Delegate<Return(Args...)>& delegate2)
+    {
+        delegate1.Swap(delegate2);
+    }
+
+    template <typename Return, typename ...Args>
+    bool operator<(const Delegate<Return(Args...)>& delegate1, const Delegate<Return(Args...)>& delegate2)
+    {
+        return delegate1.m_Priority < delegate2.m_Priority;
+    }
+}
+
+
+#endif
+
+
+
+
+
+
+
+
+
+/*
+// Primary Delegate Class Template
     template <typename Signature>
     class Delegate;
 
@@ -287,7 +350,4 @@ namespace Speculo
         m_MoveStorage = other.m_MoveStorage;
         other.m_MoveStorage = temporaryMove;
     }
-}
-
-
-#endif
+*/
