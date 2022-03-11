@@ -4,7 +4,7 @@
 #include "Material.h"
 #include "Math.h"
 #include "RTTI/Reflect.hpp"
-// #include "Delegates/Signal.hpp"
+#include "Delegates/Signal.hpp"
 
 using namespace Speculo;
 
@@ -97,41 +97,60 @@ void MaterialDeserializationTest()
     materialDeserialization.EndDeserialization();
 }
 
+SIGNAL_RETURN_ONE_PARAM(MultiDelegate, int, double);
+MultiDelegate multiDelegate;
+
 class MyClass
 {
 public:
-    MyClass(int i) : i(i) {}
+    MyClass(int i) : i(i)
+    {
+        m_Connections.push_back(multiDelegate.Bind(*this, &MyClass::MemberFunction));
+        m_Connections.push_back(multiDelegate.Bind(*this, &MyClass::ConstMemberFunction));
+        m_Connections.push_back(multiDelegate.Bind(&MyClass::StaticMemberFunction, 3));
+        m_Connections.push_back(multiDelegate.Bind(*this, 2));
+        m_Connections.push_back(multiDelegate.Bind(*static_cast<const MyClass*>(this), 1));
+    }
+
+    ~MyClass()
+    {
+        // Disconnect from 
+        for (auto& connection : m_Connections)
+        {   
+            std::cout << "Disconnected Connection!" << "\n";
+            connection.Disconnect();
+        }
+    }
+
     int MemberFunction(double d) { std::cout << "in member function" << std::endl; return int(++i * d); }
     int ConstMemberFunction(double d) const { std::cout << "in const member function" << std::endl; return int(i * d); }
     int operator()(double d) { std::cout << "in overloaded function call operator" << std::endl; return (int)(++i + d); }
     int operator()(double d) const { std::cout << "in const overloaded function call operator" << std::endl; return (int)(i + d); }
     static int StaticMemberFunction(double d) { std::cout << "in static member function" << std::endl; return int(10 + d); }
+
 private:
     int i;
+    std::vector<Connection> m_Connections; // A vector of delegate connections.
 };
-
-// SIGNAL_RETURN_ONE_PARAM(MultiDelegate, int, double);
-// MultiDelegate multiDelegate;
 
 int main(int argc, int argv[])
 {
-/*
-    MyClass mc(10);
-    const MyClass cmc(8);
+    {
+        MyClass myClass(10);
+        multiDelegate(5.5);
+    }
+
+    multiDelegate(1.2);
+
     int i = 10;
-    auto lambda = [&i](double d) { std::cout << "in  lvalue lambda" << std::endl; return i * d; };
 
-    multiDelegate.Bind<MyClass, &MyClass::MemberFunction>(mc);
-    multiDelegate.Bind<MyClass, &MyClass::ConstMemberFunction>(mc);
-    // multiDelegate.Bind<const MyClass, &MyClass::ConstMemberFunction>(cmc);
-    multiDelegate.Bind<&MyClass::StaticMemberFunction>();
-    multiDelegate.Bind(mc);
-    multiDelegate.Bind(cmc);
-    multiDelegate.Bind(lambda);
-    // multiDelegate.Bind([&i](double d) { std::cout << " in rvalue lambda" << std::endl; return i * d; });
+    auto lambda1 = [&i](double) { std::cout << "In Lambda" << "\n"; return 10; };
+    multiDelegate.Bind(lambda1, 3);
 
-    multiDelegate.Invoke(1.20);
- */
+    multiDelegate.Bind([i](int d) mutable -> int { std::cout << "In Temporary" << std::endl; return 10; }, 2);
+    multiDelegate(1.2);
+    multiDelegate([](int i) -> bool { return i == 10; }, 1.20);
+
     // ===========================================================================
 
     Speculo::Reflect<int>("int").AddMemberFunction(&Print<int>, "Print");

@@ -10,7 +10,7 @@
 namespace Speculo
 {
     // Delegate Exceptions
-    class DelegateNotBoundExceptiopn : public std::exception
+    class DelegateNotBoundException : public std::exception
     {
     public:
         const char* what() const noexcept override
@@ -57,20 +57,131 @@ namespace Speculo
     {
         return delegate1.m_Priority < delegate2.m_Priority;
     }
+
+    // Delegate partial class template specialization for function types.
+    template <typename Return, typename ...Args>
+    class Delegate<Return(Args...)>
+    {
+        friend class Signal<Return(Args...)>;
+        friend bool operator< <>(const Delegate&, const Delegate&);
+
+    public:
+        Delegate() : m_CallableWrapper(nullptr) { }
+        Delegate(const Delegate& other) = delete;
+        Delegate(Delegate&& other);
+        ~Delegate();
+
+        Delegate& operator=(const Delegate& other) = delete;
+        Delegate& operator=(Delegate&& other);
+
+        template <typename T, typename PtrToMemberFunction>
+        std::enable_if_t<std::is_member_function_pointer_v<PtrToMemberFunction>> Bind(T& instance, PtrToMemberFunction ptrToMemberFunction, unsigned int priority = -1);
+
+        template <typename T>
+        void Bind(T&& functionObject, unsigned int priority = -1);
+
+        void Swap(Delegate& other);
+
+        explicit operator bool() const { return m_CallableWrapper != nullptr; }
+
+        Return operator()(Args... args) const;
+
+        Return Invoke(Args... args) const;
+
+    private:
+        CallableWrapper<Return(Args...)>* m_CallableWrapper;
+        unsigned int m_Priority;
+    };
+
+    template <typename Return, typename ...Args>
+    Delegate<Return(Args...)>::Delegate(Delegate&& other) : m_CallableWrapper(other.m_CallableWrapper), m_Priority(other.m_Priority)
+    {
+        other.m_CallableWrapper = nullptr;
+    }
+
+    template <typename Return, typename ...Args>
+    Delegate<Return(Args...)>::~Delegate()
+    {
+        delete m_CallableWrapper;
+        m_CallableWrapper = nullptr;
+    }
+
+    template <typename Return, typename ...Args>
+    Delegate<Return(Args...)>& Delegate<Return(Args...)>::operator=(Delegate&& other)
+    {
+        Delegate temporary(std::move(other));
+        Swap(temporary);
+
+        return *this;
+    }
+
+    template <typename Return, typename ...Args>
+    template <typename T, typename PtrToMemberFunction>
+    std::enable_if_t<std::is_member_function_pointer_v<PtrToMemberFunction>> Delegate<Return(Args...)>::Bind(T& instance, PtrToMemberFunction ptrToMemberFunction, unsigned int priority)
+    {
+        if (m_CallableWrapper)
+        {
+            throw DelegateAlreadyBoundException();
+        }
+
+        m_CallableWrapper = new MemberFunctionCallableWrapper<Return(Args...), T, PtrToMemberFunction>(instance, ptrToMemberFunction);
+        m_Priority = priority;
+    }
+
+    template <typename Return, typename ...Args>
+    template <typename T>
+    void Delegate<Return(Args...)>::Bind(T&& functionObject, unsigned int priority)
+    {
+        if (m_CallableWrapper)
+        {
+            throw DelegateAlreadyBoundException();
+        }
+
+        m_CallableWrapper = new FunctionObjectCallableWrapper<Return(Args...), std::remove_reference_t<T>>(std::forward<T>(functionObject));
+        m_Priority = priority;
+    }
+
+    template <typename Return, typename ...Args>
+    void Delegate<Return(Args...)>::Swap(Delegate& other)
+    {
+        CallableWrapper<Return(Args...)>* callableTemporary = m_CallableWrapper;
+        m_CallableWrapper = other.m_CallableWrapper;
+        other.m_CallableWrapper = callableTemporary;
+
+        unsigned int priorityTemporary = m_Priority;
+        m_Priority = other.m_Priority;
+        other.m_Priority = priorityTemporary;
+    }
+
+    template <typename Return, typename ...Args>
+    Return Delegate<Return(Args...)>::operator()(Args... args) const
+    {
+        if (!m_CallableWrapper)
+        {
+            throw DelegateNotBoundException();
+        }
+
+        return m_CallableWrapper->Invoke(std::forward<Args>(args)...);
+    }
+
+    template <typename Return, typename ...Args>
+    Return Delegate<Return(Args...)>::Invoke(Args... args) const
+    {
+        if (!m_CallableWrapper)
+        {
+            throw DelegateNotBoundException();
+        }
+
+        return m_CallableWrapper->Invoke(std::forward<Args>(args)...);
+    }
 }
 
 
 #endif
 
 
+/* Old API
 
-
-
-
-
-
-
-/*
 // Primary Delegate Class Template
     template <typename Signature>
     class Delegate;
